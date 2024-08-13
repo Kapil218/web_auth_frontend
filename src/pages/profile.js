@@ -1,35 +1,62 @@
+import axios from "axios";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
+import { startRegistration } from "@simplewebauthn/browser";
 function Profile() {
   const navigate = useNavigate();
 
-  const handleRegisterPasskey = () => {
+  const handleRegisterPasskey = async () => {
     // Add your passkey registration logic here
-    console.log("Register Passkey clicked");
+    const response = await axios.post(
+      "http://localhost:8000/api/v1/users/register-challenge",
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }
+    );
+
+    const { options } = response.data.data;
+
+    const authenticationResult = await startRegistration(options);
+    console.log(authenticationResult);
+
+    await axios.post(
+      "http://localhost:8000/api/v1/users/verify-challenge",
+      { cred: authenticationResult },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }
+    );
   };
 
   const handleLogout = async () => {
     try {
       // Make a POST request to the logout API
-      const response = await fetch(
+      const response = await axios.post(
         "http://localhost:8000/api/v1/users/logout",
+        {},
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true,
         }
       );
 
       // Check if the response is okay
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       // Optionally, handle the response if needed
-      const data = await response.json();
-      console.log("Logout Response:", data);
+
+      console.log("Logout Response:", response);
 
       // Redirect to the login page
       navigate("/login");

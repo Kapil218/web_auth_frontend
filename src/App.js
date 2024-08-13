@@ -10,7 +10,9 @@ import RegisterForm from "./pages/register.js";
 import LoginForm from "./pages/login.js";
 import Profile from "./pages/profile.js";
 import "./App.css"; // Import the CSS file
+import axios from "axios";
 
+axios.defaults.withCredentials = true;
 function App() {
   return (
     <Router>
